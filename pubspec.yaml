@@ -1,0 +1,40 @@
+name: bankart
+description: "A new Flutter package project."
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ^3.5.4
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.0
+  flutter_web_plugins:
+    sdk: flutter
+  plugin_platform_interface: ^2.0.2
+  device_info_plus: ^11.1.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  assets:
+    - assets/
+    - assets/Mastercard Symbol - SVG/Artwork/mc_symbol.svg
+    - assets/american-express-svgrepo-com.svg
+    - assets/diners-club-logo3.svg
+    - assets/discover-card.svg
+    - assets/jcb.svg
+    - assets/paypal.svg
+    - assets/visa.svg
+    - assets/mir-svgrepo-com.svg
+    - assets/unionpay.svg
+    - assets/generic-svgrepo-com.svg
