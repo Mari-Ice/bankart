@@ -36,6 +36,16 @@ googlepay:{"signature":"...","intermediateSigningKey":{"signedKey":"{\"keyValue\
 
 # Usage
 
-- init the instance of Bankart object with required parameters SharedSecret, BankartStyle.
+- create a new instance of Bankart object with required parameter SharedSecret.
+
+constructor fingerprint: 
+```dart
+factory Bankart(String sharedSecret,
+          {BankartStyle? style,
+          String? paymentButtonText,
+          String? cardHolder,
+          String? cardHolderErrorText, Function(dynamic)? onSuccess, Function(dynamic)? onError})
+```
+
 - render the object directly in the widget tree
 - also possible to use bankart.client.tokenize(CardData cardData) method to tokenize the card data directly without of usage of our widget
