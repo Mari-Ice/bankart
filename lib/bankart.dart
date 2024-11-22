@@ -6,23 +6,45 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bankart/bankart_style.dart';
 import 'package:bankart/input_formatters.dart';
 import 'package:bankart/tokenization_api.dart';
+import 'package:pay/pay.dart';
 
 class Bankart extends StatefulWidget {
   final BankartStyle style;
   final String paymentButtonText;
   final String sharedSecret;
   final TokenizationApi client;
+  String? cardHolder;
+  final String cardHolderErrorText;
+  Function(dynamic)? onSuccess;
+  Function(dynamic)? onError;
 
-  const Bankart.init(
-      {super.key, required this.sharedSecret, required this.style, required this.paymentButtonText, required this.client});
+  Bankart.init({
+    super.key,
+    required this.sharedSecret,
+    required this.style,
+    required this.paymentButtonText,
+    required this.client,
+    this.cardHolder,
+    required this.cardHolderErrorText,
+    this.onSuccess,
+    this.onError,
+  });
 
-  factory Bankart(String sharedSecret, {BankartStyle? style, String? paymentButtonText}) =>
+  factory Bankart(String sharedSecret,
+          {BankartStyle? style,
+          String? paymentButtonText,
+          String? cardHolder,
+          String? cardHolderErrorText, Function(dynamic)? onSuccess, Function(dynamic)? onError}) =>
       Bankart.init(
           sharedSecret: sharedSecret,
           style: style ?? BankartStyle(),
           paymentButtonText: paymentButtonText ?? 'Pay',
-          client: TokenizationApi(integrationKey: sharedSecret)
-      );
+          client: TokenizationApi(integrationKey: sharedSecret),
+          cardHolder: cardHolder,
+          cardHolderErrorText:
+              cardHolderErrorText ?? 'Card Holder is required',
+          onSuccess: onSuccess,
+          onError: onError);
 
   String getPlatformVersion() {
     if (Platform.isAndroid) {
@@ -33,42 +55,69 @@ class Bankart extends StatefulWidget {
     return 'Unknown platform version';
   }
 
+  void setCardHolder(String cardHolder) {
+    this.cardHolder = cardHolder;
+  }
+
   @override
   State<Bankart> createState() => _BankartState();
 }
 
 class _BankartState extends State<Bankart> {
   String cardNumber = '';
+  String cvv = '';
+  String expiryDate = '';
+  String cardHolder = '';
   String cardPath = 'packages/bankart/assets/generic-svgrepo-com.svg';
   String? token;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(widget.style.padding),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...bankartContent(context),
-        ],
-      ),
-    );
+        padding: EdgeInsets.all(widget.style.padding),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+        ),
+        child: Column(
+          children: bankartContent(context) ?? const <Widget>[],
+        ));
   }
 
   List<Widget> bankartContent(BuildContext context) {
     List<Widget> widgets = [];
-    if (!kIsWeb) {
-      widgets
-          .add(_buildPaymentMethodsSection(context) ?? const SizedBox.shrink());
-      widgets.add(
-        SizedBox(height: widget.style.heightSpace),
-      );
-      widgets.add(
-        const Center(child: Text('or pay by', style: TextStyle(fontSize: 16))),
-      );
+    // if (!kIsWeb) {
+    //   Widget? paymentMethods = _buildPaymentMethodsSection(context);
+    //   widgets.add(paymentMethods ?? const SizedBox.shrink());
+    //   widgets.add(
+    //     SizedBox(height: widget.style.heightSpace),
+    //   );
+    //   widgets.add(
+    //     const Center(child: Text('or pay by', style: TextStyle(fontSize: 16))),
+    //   );
+    //   widgets.add(
+    //     SizedBox(height: widget.style.heightSpace),
+    //   );
+    // }
+    if (widget.cardHolder == null) {
+      widgets.add(Container(
+          padding: EdgeInsets.all(widget.style.padding),
+          child: Material(
+            elevation: widget.style.buttonElevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.style.borderRadius),
+            ),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  labelText: 'Card Holder',
+                  border: widget.style.inputBorder(),
+                  contentPadding: EdgeInsets.all(widget.style.padding)),
+              onChanged: (value) {
+                setState(() {
+                  cardHolder = value;
+                });
+              },
+            ),
+          )));
       widgets.add(
         SizedBox(height: widget.style.heightSpace),
       );
@@ -79,27 +128,125 @@ class _BankartState extends State<Bankart> {
 
   // Payment methods section (Apple Pay / Google Pay buttons)
   Widget? _buildPaymentMethodsSection(BuildContext context) {
+    const _paymentItems = [
+      PaymentItem(
+        label: 'Total',
+        amount: '0.0',
+        status: PaymentItemStatus.final_price,
+      )
+    ];
     if (!Platform.isIOS && !Platform.isAndroid) return null;
-    return ElevatedButton.icon(
-      onPressed: () {
-        // Add Apple Pay functionality here
-      },
-      icon: Icon(
-        Platform.isIOS ? Icons.apple : Icons.payments,
-        size: 24,
-        color: Platform.isIOS ? Colors.white : Colors.black,
-      ),
-      label: Text(
-        Platform.isIOS ? 'Apple Pay' : 'Google Pay',
-        style: TextStyle(color: Platform.isIOS ? Colors.white : Colors.black),
-      ),
-      style: ElevatedButton.styleFrom(
-        minimumSize: Size(double.infinity, 50),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-        backgroundColor:
-        Platform.isIOS ? Colors.black : widget.style.buttonColor,
-      ),
-    );
+    if (Platform.isAndroid) {
+      String defaultGooglePay = '''{
+        "provider": "google_pay",
+        "data": {
+          "environment": "TEST",
+          "apiVersion": 2,
+          "apiVersionMinor": 0,
+          "allowedPaymentMethods": [
+            {
+              "type": "CARD",
+              "tokenizationSpecification": {
+                "type": "PAYMENT_GATEWAY",
+                "parameters": {
+                  "gateway": "example",
+                  "gatewayMerchantId": "gatewayMerchantId"
+                }
+              },
+              "parameters": {
+                "allowedCardNetworks": ["VISA", "MASTERCARD"],
+                "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"],
+                "billingAddressRequired": true,
+                "billingAddressParameters": {
+                  "format": "FULL",
+                  "phoneNumberRequired": true
+                }
+              }
+            }
+          ],
+          "merchantInfo": {
+            "merchantName": "Example Merchant Name"
+          },
+          "transactionInfo": {
+            "countryCode": "SI",
+            "currencyCode": "EUR"
+          }
+        }
+      }''';
+      PaymentConfiguration configuration =
+          PaymentConfiguration.fromJsonString(defaultGooglePay);
+      return GooglePayButton(
+        paymentConfiguration: configuration,
+        paymentItems: _paymentItems,
+        margin: const EdgeInsets.only(top: 15.0),
+        onPaymentResult: (paymentResult) async {
+          print('Google Pay payment result: $paymentResult');
+          String newToken = await widget.client.getBankartToken(
+              null,
+              TokenizationResponse.fromValues(
+                token: paymentResult['paymentMethodData']['tokenizationData']
+                    ['token'],
+                cardHolder: paymentResult['paymentMethodData']['info']
+                    ['billingAddress']['name'],
+                lastFourDigits: paymentResult['paymentMethodData']['info']
+                        ['cardDetails']
+                    .toString(),
+                cardType: paymentResult['paymentMethodData']['info'][
+                    'cardNetwork'], // or paymentResult['paymentMethodData']['type'] todo: check if this is correct, make this section more robust to errors
+              ),
+              await widget.client.getDeviceData());
+          setState(() {
+            print('Token: $newToken');
+            token = newToken;
+          });
+        },
+      );
+    } else {
+      PaymentConfiguration configuration =
+          PaymentConfiguration.fromJsonString('''{
+        "provider": "apple_pay",
+        "data": {
+          "merchantIdentifier": "AMZS",
+          "displayName": "Sam's Fish",
+          "merchantCapabilities": ["3DS", "debit", "credit"],
+          "supportedNetworks": ["amex", "visa", "discover", "masterCard"],
+          "countryCode": "SI",
+          "currencyCode": "EUR",
+          "requiredBillingContactFields": ["emailAddress", "name", "phoneNumber", "postalAddress"],
+          "requiredShippingContactFields": [],
+          "shippingMethods": [
+            {
+              "amount": "0.00",
+              "detail": "Available within an hour",
+              "identifier": "in_store_pickup",
+              "label": "In-Store Pickup"
+            },
+            {
+              "amount": "0.00",
+              "detail": "5-8 Business Days",
+              "identifier": "flat_rate_shipping_id_2",
+              "label": "UPS Ground"
+            },
+            {
+              "amount": "0.00",
+              "detail": "1-3 Business Days",
+              "identifier": "flat_rate_shipping_id_1",
+              "label": "FedEx Priority Mail"
+            }
+          ]
+        }
+      }''');
+      return ApplePayButton(
+        paymentItems: _paymentItems,
+        style: ApplePayButtonStyle.black,
+        type: ApplePayButtonType.buy,
+        margin: const EdgeInsets.only(top: 15.0),
+        onPaymentResult: (paymentResult) {
+          print(paymentResult);
+        },
+        paymentConfiguration: configuration,
+      );
+    }
   }
 
   Widget _bankart(BuildContext context) {
@@ -128,7 +275,7 @@ class _BankartState extends State<Bankart> {
                 elevation: widget.style.buttonElevation,
                 shape: RoundedRectangleBorder(
                   borderRadius:
-                  BorderRadius.circular(widget.style.borderRadius),
+                      BorderRadius.circular(widget.style.borderRadius),
                 ),
                 child: _buildCardNumberField(context),
               ),
@@ -154,7 +301,7 @@ class _BankartState extends State<Bankart> {
                   elevation: widget.style.buttonElevation,
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                    BorderRadius.circular(widget.style.borderRadius),
+                        BorderRadius.circular(widget.style.borderRadius),
                   ),
                   child: _buildExpiryDateField(context),
                 ),
@@ -167,7 +314,7 @@ class _BankartState extends State<Bankart> {
                   elevation: widget.style.buttonElevation,
                   shape: RoundedRectangleBorder(
                     borderRadius:
-                    BorderRadius.circular(widget.style.borderRadius),
+                        BorderRadius.circular(widget.style.borderRadius),
                   ),
                   child: _buildCvvField(context),
                 ),
@@ -226,7 +373,7 @@ class _BankartState extends State<Bankart> {
                       border: TableBorder(
                           verticalInside: BorderSide(
                               color:
-                              widget.style.themeData.colorScheme.primary)),
+                                  widget.style.themeData.colorScheme.primary)),
                       children: [
                         TableRow(
                           children: [
@@ -300,10 +447,10 @@ class _BankartState extends State<Bankart> {
         border: widget.style.inputBorder(),
         icon: (widget.style.name == 'inline')
             ? SvgPicture.asset(
-          cardPath,
-          width: 30,
-          height: 30,
-        )
+                cardPath,
+                width: 30,
+                height: 30,
+              )
             : null,
         contentPadding: EdgeInsets.all(widget.style.padding),
       ),
@@ -341,6 +488,11 @@ class _BankartState extends State<Bankart> {
       onTapOutside: (e) {
         FocusScope.of(context).requestFocus(FocusNode());
       },
+      onChanged: (value) {
+        setState(() {
+          expiryDate = value;
+        });
+      },
     );
   }
 
@@ -356,6 +508,11 @@ class _BankartState extends State<Bankart> {
       onTapOutside: (e) {
         FocusScope.of(context).requestFocus(FocusNode());
       },
+      onChanged: (value) {
+        setState(() {
+          cvv = value;
+        });
+      },
     );
   }
 
@@ -364,19 +521,48 @@ class _BankartState extends State<Bankart> {
         width: widget.style.paymentButtonWidth,
         height: 50,
         child: ElevatedButton(
-            onPressed: () async{
-              String? result = await widget.client.tokenize(
-                  CardData(
-                    cardHolder: 'Marija Absec',
-                    pan: '4111111111111111',
-                    expirationMonth: 11,
-                    expirationYear: 2025,
-                    cvv: '111',
-                  )
-              );
+            onPressed: () async {
+              if (widget.cardHolder == null && cardHolder.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(widget.cardHolderErrorText), backgroundColor: Colors.red,));
+                return;
+              }
+              if(cardNumber.isEmpty || expiryDate.isEmpty || cvv.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('All fields are required'), backgroundColor: Colors.red,));
+                return;
+              }
+
+               if (expiryDate.contains('/') == false ||
+                  int.parse(expiryDate.split('/')[0]) > 12 ||
+                  int.parse(expiryDate.split('/')[0]) < 1 ||
+                  int.parse(expiryDate.split('/')[1]) + 2000 < DateTime.now().year ||
+                  (int.parse(expiryDate.split('/')[1]) + 2000 == DateTime.now().year &&
+                      int.parse(expiryDate.split('/')[0]) <
+                          DateTime.now().month)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Invalid expiry date'), backgroundColor: Colors.red,));
+                return;
+              }
+              String? result = await widget.client.tokenize(CardData(
+                cardHolder: widget.cardHolder ?? cardHolder,
+                pan: cardNumber,
+                expirationMonth: int.parse(expiryDate.split('/')[0]),
+                expirationYear: int.parse(expiryDate.split('/')[1]) + 2000,
+                cvv: cvv,
+              ));
+               if (result == null) {
+                 if(widget.onError != null) {
+                   widget.onError!('Tokenization failed');
+                 }
+                 return;
+               }
               setState(() {
                 token = result;
               });
+               if (widget.onSuccess != null) {
+                 widget.onSuccess!(token);
+               }
               if (kDebugMode) {
                 print('Token: $token');
               }
@@ -386,7 +572,7 @@ class _BankartState extends State<Bankart> {
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(
                   borderRadius:
-                  BorderRadius.circular(widget.style.paymentButtonRadius)),
+                      BorderRadius.circular(widget.style.paymentButtonRadius)),
               backgroundColor: widget.style.buttonColor,
             ),
             child: Text(
@@ -403,7 +589,7 @@ class _BankartState extends State<Bankart> {
     } else if (RegExp(r'^5[1-5]').hasMatch(cardNumber)) {
       // MasterCard starts with '51' to '55'
       assetPath =
-      'packages/bankart/assets/Mastercard Symbol - SVG/Artwork/mc_symbol.svg';
+          'packages/bankart/assets/Mastercard Symbol - SVG/Artwork/mc_symbol.svg';
     } else if (RegExp(r'^3[47]').hasMatch(cardNumber)) {
       // American Express starts with '34' or '37'
       assetPath = 'packages/bankart/assets/american-express-svgrepo-com.svg';

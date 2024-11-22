@@ -27,43 +27,58 @@ class CardData {
 
 /// Initial tokenization response data
 class TokenizationResponse {
-  final String token;
-  final String fingerprint;
-  final String cardType;
-  final String cardHolder;
-  final String binDigits;
-  final String firstSixDigits;
-  final String lastFourDigits;
-  final String expirationMonth;
-  final String expirationYear;
+  final String? token;
+  final String? fingerprint;
+  final String? cardType;
+  final String? cardHolder;
+  final String? binDigits;
+  final String? firstSixDigits;
+  final String? lastFourDigits;
+  final String? expirationMonth;
+  final String? expirationYear;
 
   TokenizationResponse({
-    required this.token,
-    required this.fingerprint,
-    required this.cardType,
-    required this.cardHolder,
-    required this.binDigits,
-    required this.firstSixDigits,
-    required this.lastFourDigits,
-    required this.expirationMonth,
-    required this.expirationYear,
+    this.token,
+    this.fingerprint,
+    this.cardType,
+    this.cardHolder,
+    this.binDigits,
+    this.firstSixDigits,
+    this.lastFourDigits,
+    this.expirationMonth,
+    this.expirationYear,
   });
 
   factory TokenizationResponse.fromJson(Map<String, dynamic> json) {
     final creditcard = json['creditcard'] as Map<String, dynamic>;
     return TokenizationResponse(
-      token: json['token'],
-      fingerprint: json['fingerprint'],
-      cardType: creditcard['cardType'],
-      cardHolder: creditcard['cardHolder'],
-      binDigits: creditcard['binDigits'],
-      firstSixDigits: creditcard['firstSixDigits'],
-      lastFourDigits: creditcard['lastFourDigits'],
-      expirationMonth: creditcard['expirationMonth'],
-      expirationYear: creditcard['expirationYear'],
+      token: json.containsKey('token') ? json['token'] : null,
+      fingerprint: json.containsKey('fingerprint') ? json['fingerprint'] : null,
+      cardType: creditcard.containsKey('cardType') ? creditcard['cardType'] : null,
+      cardHolder: creditcard.containsKey('cardHolder') ? creditcard['cardHolder'] : null,
+      binDigits: creditcard.containsKey('binDigits') ? creditcard['binDigits'] : null,
+      firstSixDigits: creditcard.containsKey('firstSixDigits') ? creditcard['firstSixDigits'] : null,
+      lastFourDigits: creditcard.containsKey('lastFourDigits') ? creditcard['lastFourDigits'] : null,
+      expirationMonth: creditcard.containsKey('expirationMonth') ? creditcard['expirationMonth'] : null,
+      expirationYear: creditcard.containsKey('expirationYear') ? creditcard['expirationYear'] : null,
     );
   }
-  @override
+  factory TokenizationResponse.fromValues(
+  {String? token, String? fingerprint, String? cardType, String? cardHolder, String? binDigits, String? firstSixDigits, String? lastFourDigits, String? expirationMonth, String? expirationYear}) {
+    return TokenizationResponse(
+      token: token,
+      fingerprint: fingerprint,
+      cardType: cardType,
+      cardHolder: cardHolder,
+      binDigits: binDigits,
+      firstSixDigits: firstSixDigits,
+      lastFourDigits: lastFourDigits,
+      expirationMonth: expirationMonth,
+      expirationYear: expirationYear,
+    );
+  }
+
+@override
   String toString() {
     return 'TokenizationResponse{token: $token, fingerprint: $fingerprint, cardType: $cardType, cardHolder: $cardHolder, binDigits: $binDigits, firstSixDigits: $firstSixDigits, lastFourDigits: $lastFourDigits, expirationMonth: $expirationMonth, expirationYear: $expirationYear}';
   }
@@ -92,51 +107,57 @@ class TokenizationApi {
 
   /// Tokenizes card data and returns final IX token
   /// Handles fingerprinting automatically based on platform
-  Future<String> tokenize(CardData cardData) async {
+  Future<String?> tokenize(CardData cardData) async {
     try {
 
       // Get device fingerprint
-      final deviceData = await _getDeviceData();
+      final deviceData = await getDeviceData();
 
       // Get initial tokenization data
       final tokenData = await _getInitialToken(cardData);
 
-      // Prepare additional data using response values
-      final Map<String, dynamic> additionalData = {
-        ...cardData.additionalData ?? {},
-        'card_type': tokenData.cardType,
-        'full_name': tokenData.cardHolder,
-        'bin_digits': tokenData.binDigits,
-        'first_six_digits': tokenData.firstSixDigits,
-        'last_four_digits': tokenData.lastFourDigits,
-        'month': tokenData.expirationMonth,
-        'year': tokenData.expirationYear,
-        'fingerprint': tokenData.fingerprint,
-      };
+      // Get final IX token
+      return getBankartToken(cardData, tokenData, deviceData);
 
-      // Make final tokenization request
-      final response = await _httpClient.post(
-        Uri.parse('$_gatewayHost/integrated/tokenize/$_integrationKey'),
-        body: {
-          'token': tokenData.token,
-          'additionalData': jsonEncode(additionalData),
-          'fp': deviceData['fingerprint'],
-        },
-      );
-
-      if (response.statusCode != 200) {
-        throw 'Failed to get final token: ${response.statusCode}';
-      }
-
-      final ixToken = response.body.trim();
-      if (!ixToken.startsWith('ix::')) {
-        throw 'Invalid token format in response';
-      }
-
-      return ixToken;
     } catch (e) {
-      throw 'Tokenization failed: $e';
+      print('Failed to tokenize card: $e');
+      return null;
     }
+  }
+
+  Future<String> getBankartToken(CardData? cardData, TokenizationResponse tokenData, Map<String, dynamic> deviceData) async {
+    Map<String, dynamic> additionalData = {
+        ...cardData?.additionalData ?? {},
+      };
+    if (tokenData.cardType != null) additionalData['card_type'] = tokenData.cardType!;
+    if (tokenData.cardHolder != null) additionalData['full_name'] = tokenData.cardHolder!;
+    if (tokenData.lastFourDigits != null) additionalData['last_four_digits'] = tokenData.lastFourDigits!;
+    if (tokenData.expirationMonth != null) additionalData['month'] = tokenData.expirationMonth!;
+    if (tokenData.expirationYear != null) additionalData['year'] = tokenData.expirationYear!;
+    if (tokenData.binDigits != null) additionalData['bin_digits'] = tokenData.binDigits!;
+    if (tokenData.firstSixDigits != null) additionalData['first_six_digits'] = tokenData.firstSixDigits!;
+    if (tokenData.fingerprint != null) additionalData['fingerprint'] = tokenData.fingerprint!;
+
+    // Make final tokenization request
+    final response = await _httpClient.post(
+      Uri.parse('$_gatewayHost/integrated/tokenize/$_integrationKey'),
+      body: {
+        'token': tokenData.token ?? 'bedni token',
+         'additionalData': jsonEncode(additionalData) ?? 'bedni additional data',
+         'fp': deviceData['fingerprint'],
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw 'Failed to get final token: ${response.statusCode}';
+    }
+
+    final ixToken = response.body.trim();
+    if (!ixToken.startsWith('ix::')) {
+      throw 'Invalid token format in response';
+    }
+
+    return ixToken;
   }
 
   Future<TokenizationResponse> _getInitialToken(CardData cardData) async {
@@ -180,7 +201,7 @@ class TokenizationApi {
     return jsonDecode(response.body)['tokenizationKey'];
   }
 
-  Future<Map<String, dynamic>> _getDeviceData() async {
+  Future<Map<String, dynamic>> getDeviceData() async {
     if (kIsWeb) {
       throw 'Web platform is not supported';
     }

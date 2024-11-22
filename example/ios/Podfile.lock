@@ -4,11 +4,14 @@ PODS:
   - Flutter (1.0.0)
   - integration_test (0.0.1):
     - Flutter
+  - pay_ios (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
   - Flutter (from `Flutter`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - pay_ios (from `.symlinks/plugins/pay_ios/ios`)
 
 EXTERNAL SOURCES:
   device_info_plus:
@@ -17,11 +20,14 @@ EXTERNAL SOURCES:
     :path: Flutter
   integration_test:
     :path: ".symlinks/plugins/integration_test/ios"
+  pay_ios:
+    :path: ".symlinks/plugins/pay_ios/ios"
 
 SPEC CHECKSUMS:
   device_info_plus: bf2e3232933866d73fe290f2942f2156cdd10342
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   integration_test: 252f60fa39af5e17c3aa9899d35d908a0721b573
+  pay_ios: 8c7beb9c61d885f3f51b61f75f8793023fc8843a
 
 PODFILE CHECKSUM: 53333a54703163d1643f7327677caaa64a75f525
 

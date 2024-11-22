@@ -1,0 +1,28 @@
+{
+  "apiVersion": 2,
+  "apiVersionMinor": 0,
+  "paymentMethodData": {
+    "description": "Mastercard••••1169",
+    "info": {
+      "billingAddress": {
+        "address1": "Tabor 3",
+        "address2": "",
+        "address3": "",
+        "administrativeArea": "",
+        "countryCode": "SI",
+        "locality": "Domžale",
+        "name": "Jure Juvan",
+        "phoneNumber": "",
+        "postalCode": 1230,
+        "sortingCode": ""
+      },
+      "cardDetails": 1169,
+      "cardNetwork": "MASTERCARD"
+    },
+    "tokenizationData": {
+      "token": "examplePaymentMethodToken",
+      "type": "PAYMENT_GATEWAY"
+    },
+    "type": "CARD"
+  }
+}
