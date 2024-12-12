@@ -43,7 +43,7 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Column(
             children: [
-            Bankart('izkwxrFBsZrkuPALWU5w',
+            Bankart('your-shared-secret',
             onSuccess: (token) => print('Tokenization successful! Token: $token)'),
             onError: (error) => print('Tokenization error! Error: $error'),
             ),
