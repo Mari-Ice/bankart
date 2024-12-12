@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bankart/bankart_style.dart';
 import 'package:bankart/input_formatters.dart';
 import 'package:bankart/tokenization_api.dart';
-import 'package:pay/pay.dart';
 
 class Bankart extends StatefulWidget {
   final BankartStyle style;
@@ -200,7 +199,7 @@ class _BankartState extends State<Bankart> {
           ),
           child: Table(
             border: TableBorder.all(
-              color: widget.style.themeData!.colorScheme.primary,
+              color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(widget.style.borderRadius),
             ),
             children: [
