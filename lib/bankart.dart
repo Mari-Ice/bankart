@@ -75,9 +75,6 @@ class _BankartState extends State<Bankart> {
   Widget build(BuildContext context) {
     return Container(
         padding: EdgeInsets.all(widget.style.padding),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-        ),
         child: Column(
           children: bankartContent(context) ?? const <Widget>[],
         ));
@@ -85,19 +82,6 @@ class _BankartState extends State<Bankart> {
 
   List<Widget> bankartContent(BuildContext context) {
     List<Widget> widgets = [];
-    // if (!kIsWeb) {
-    //   Widget? paymentMethods = _buildPaymentMethodsSection(context);
-    //   widgets.add(paymentMethods ?? const SizedBox.shrink());
-    //   widgets.add(
-    //     SizedBox(height: widget.style.heightSpace),
-    //   );
-    //   widgets.add(
-    //     const Center(child: Text('or pay by', style: TextStyle(fontSize: 16))),
-    //   );
-    //   widgets.add(
-    //     SizedBox(height: widget.style.heightSpace),
-    //   );
-    // }
     if (widget.cardHolder == null) {
       widgets.add(Container(
           padding: EdgeInsets.all(widget.style.padding),
@@ -126,128 +110,6 @@ class _BankartState extends State<Bankart> {
     return widgets;
   }
 
-  // Payment methods section (Apple Pay / Google Pay buttons)
-  Widget? _buildPaymentMethodsSection(BuildContext context) {
-    const _paymentItems = [
-      PaymentItem(
-        label: 'Total',
-        amount: '0.0',
-        status: PaymentItemStatus.final_price,
-      )
-    ];
-    if (!Platform.isIOS && !Platform.isAndroid) return null;
-    if (Platform.isAndroid) {
-      String defaultGooglePay = '''{
-        "provider": "google_pay",
-        "data": {
-          "environment": "TEST",
-          "apiVersion": 2,
-          "apiVersionMinor": 0,
-          "allowedPaymentMethods": [
-            {
-              "type": "CARD",
-              "tokenizationSpecification": {
-                "type": "PAYMENT_GATEWAY",
-                "parameters": {
-                  "gateway": "example",
-                  "gatewayMerchantId": "gatewayMerchantId"
-                }
-              },
-              "parameters": {
-                "allowedCardNetworks": ["VISA", "MASTERCARD"],
-                "allowedAuthMethods": ["PAN_ONLY", "CRYPTOGRAM_3DS"],
-                "billingAddressRequired": true,
-                "billingAddressParameters": {
-                  "format": "FULL",
-                  "phoneNumberRequired": true
-                }
-              }
-            }
-          ],
-          "merchantInfo": {
-            "merchantName": "Example Merchant Name"
-          },
-          "transactionInfo": {
-            "countryCode": "SI",
-            "currencyCode": "EUR"
-          }
-        }
-      }''';
-      PaymentConfiguration configuration =
-          PaymentConfiguration.fromJsonString(defaultGooglePay);
-      return GooglePayButton(
-        paymentConfiguration: configuration,
-        paymentItems: _paymentItems,
-        margin: const EdgeInsets.only(top: 15.0),
-        onPaymentResult: (paymentResult) async {
-          print('Google Pay payment result: $paymentResult');
-          String newToken = await widget.client.getBankartToken(
-              null,
-              TokenizationResponse.fromValues(
-                token: paymentResult['paymentMethodData']['tokenizationData']
-                    ['token'],
-                cardHolder: paymentResult['paymentMethodData']['info']
-                    ['billingAddress']['name'],
-                lastFourDigits: paymentResult['paymentMethodData']['info']
-                        ['cardDetails']
-                    .toString(),
-                cardType: paymentResult['paymentMethodData']['info'][
-                    'cardNetwork'], // or paymentResult['paymentMethodData']['type'] todo: check if this is correct, make this section more robust to errors
-              ),
-              await widget.client.getDeviceData());
-          setState(() {
-            print('Token: $newToken');
-            token = newToken;
-          });
-        },
-      );
-    } else {
-      PaymentConfiguration configuration =
-          PaymentConfiguration.fromJsonString('''{
-        "provider": "apple_pay",
-        "data": {
-          "merchantIdentifier": "AMZS",
-          "displayName": "Sam's Fish",
-          "merchantCapabilities": ["3DS", "debit", "credit"],
-          "supportedNetworks": ["amex", "visa", "discover", "masterCard"],
-          "countryCode": "SI",
-          "currencyCode": "EUR",
-          "requiredBillingContactFields": ["emailAddress", "name", "phoneNumber", "postalAddress"],
-          "requiredShippingContactFields": [],
-          "shippingMethods": [
-            {
-              "amount": "0.00",
-              "detail": "Available within an hour",
-              "identifier": "in_store_pickup",
-              "label": "In-Store Pickup"
-            },
-            {
-              "amount": "0.00",
-              "detail": "5-8 Business Days",
-              "identifier": "flat_rate_shipping_id_2",
-              "label": "UPS Ground"
-            },
-            {
-              "amount": "0.00",
-              "detail": "1-3 Business Days",
-              "identifier": "flat_rate_shipping_id_1",
-              "label": "FedEx Priority Mail"
-            }
-          ]
-        }
-      }''');
-      return ApplePayButton(
-        paymentItems: _paymentItems,
-        style: ApplePayButtonStyle.black,
-        type: ApplePayButtonType.buy,
-        margin: const EdgeInsets.only(top: 15.0),
-        onPaymentResult: (paymentResult) {
-          print(paymentResult);
-        },
-        paymentConfiguration: configuration,
-      );
-    }
-  }
 
   Widget _bankart(BuildContext context) {
     switch (widget.style.name) {
