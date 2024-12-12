@@ -12,8 +12,11 @@ class Bankart extends StatefulWidget {
   final String paymentButtonText;
   final String sharedSecret;
   final TokenizationApi client;
+  final String cardHolderText;
+  final String cardNumberText;
+  final String expiryDateText;
+  final Map<String, String> errorMessages;
   String? cardHolder;
-  final String cardHolderErrorText;
   Function(dynamic)? onSuccess;
   Function(dynamic)? onError;
 
@@ -23,8 +26,11 @@ class Bankart extends StatefulWidget {
     required this.style,
     required this.paymentButtonText,
     required this.client,
+    required this.cardHolderText,
+    required this.cardNumberText,
+    required this.expiryDateText,
+    required this.errorMessages,
     this.cardHolder,
-    required this.cardHolderErrorText,
     this.onSuccess,
     this.onError,
   });
@@ -33,15 +39,22 @@ class Bankart extends StatefulWidget {
           {BankartStyle? style,
           String? paymentButtonText,
           String? cardHolder,
-          String? cardHolderErrorText, Function(dynamic)? onSuccess, Function(dynamic)? onError}) =>
+          String? cardHolderText,
+          String? cardNumberText,
+          String? expiryDateText,
+          Map<String, String>? errorMessages,
+          Function(dynamic)? onSuccess,
+          Function(dynamic)? onError}) =>
       Bankart.init(
           sharedSecret: sharedSecret,
           style: style ?? BankartStyle(),
           paymentButtonText: paymentButtonText ?? 'Pay',
           client: TokenizationApi(integrationKey: sharedSecret),
+          cardHolderText: cardHolderText ?? 'Card Holder',
+          cardNumberText: cardNumberText ?? 'Card Number',
+          expiryDateText: expiryDateText ?? 'MM/YY',
+          errorMessages: errorMessages ?? {'empty': 'All fields are required', 'expiry': 'Invalid expiry date', 'cardHolder': 'Card Holder is required', 'tokenization': 'Tokenization failed'},
           cardHolder: cardHolder,
-          cardHolderErrorText:
-              cardHolderErrorText ?? 'Card Holder is required',
           onSuccess: onSuccess,
           onError: onError);
 
@@ -91,7 +104,7 @@ class _BankartState extends State<Bankart> {
             ),
             child: TextFormField(
               decoration: InputDecoration(
-                  labelText: 'Card Holder',
+                  labelText: widget.cardHolderText,
                   border: widget.style.inputBorder(),
                   contentPadding: EdgeInsets.all(widget.style.padding)),
               onChanged: (value) {
@@ -108,7 +121,6 @@ class _BankartState extends State<Bankart> {
     widgets.add(_bankart(context));
     return widgets;
   }
-
 
   Widget _bankart(BuildContext context) {
     switch (widget.style.name) {
@@ -304,7 +316,7 @@ class _BankartState extends State<Bankart> {
   Widget _buildCardNumberField(BuildContext context) {
     return TextFormField(
       decoration: InputDecoration(
-        labelText: 'Card Number',
+        labelText: widget.cardNumberText,
         border: widget.style.inputBorder(),
         icon: (widget.style.name == 'inline')
             ? SvgPicture.asset(
@@ -337,7 +349,7 @@ class _BankartState extends State<Bankart> {
   Widget _buildExpiryDateField(BuildContext context) {
     return TextFormField(
       decoration: InputDecoration(
-          labelText: 'MM/YY',
+          labelText: widget.expiryDateText,
           border: widget.style.inputBorder(),
           contentPadding: EdgeInsets.all(widget.style.padding)),
       keyboardType: TextInputType.number,
@@ -384,25 +396,33 @@ class _BankartState extends State<Bankart> {
         child: ElevatedButton(
             onPressed: () async {
               if (widget.cardHolder == null && cardHolder.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(widget.cardHolderErrorText), backgroundColor: Colors.red,));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(widget.errorMessages['cardHolder']!),
+                  backgroundColor: Colors.red,
+                ));
                 return;
               }
-              if(cardNumber.isEmpty || expiryDate.isEmpty || cvv.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('All fields are required'), backgroundColor: Colors.red,));
+              if (cardNumber.isEmpty || expiryDate.isEmpty || cvv.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(widget.errorMessages['empty']!),
+                  backgroundColor: Colors.red,
+                ));
                 return;
               }
 
-               if (expiryDate.contains('/') == false ||
+              if (expiryDate.contains('/') == false ||
                   int.parse(expiryDate.split('/')[0]) > 12 ||
                   int.parse(expiryDate.split('/')[0]) < 1 ||
-                  int.parse(expiryDate.split('/')[1]) + 2000 < DateTime.now().year ||
-                  (int.parse(expiryDate.split('/')[1]) + 2000 == DateTime.now().year &&
+                  int.parse(expiryDate.split('/')[1]) + 2000 <
+                      DateTime.now().year ||
+                  (int.parse(expiryDate.split('/')[1]) + 2000 ==
+                          DateTime.now().year &&
                       int.parse(expiryDate.split('/')[0]) <
                           DateTime.now().month)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid expiry date'), backgroundColor: Colors.red,));
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(widget.errorMessages['expiry']!),
+                  backgroundColor: Colors.red,
+                ));
                 return;
               }
               String? result = await widget.client.tokenize(CardData(
@@ -412,18 +432,18 @@ class _BankartState extends State<Bankart> {
                 expirationYear: int.parse(expiryDate.split('/')[1]) + 2000,
                 cvv: cvv,
               ));
-               if (result == null) {
-                 if(widget.onError != null) {
-                   widget.onError!('Tokenization failed');
-                 }
-                 return;
-               }
+              if (result == null) {
+                if (widget.onError != null) {
+                  widget.onError!(widget.errorMessages['tokenization']);
+                }
+                return;
+              }
               setState(() {
                 token = result;
               });
-               if (widget.onSuccess != null) {
-                 widget.onSuccess!(token);
-               }
+              if (widget.onSuccess != null) {
+                widget.onSuccess!(token);
+              }
               if (kDebugMode) {
                 print('Token: $token');
               }
