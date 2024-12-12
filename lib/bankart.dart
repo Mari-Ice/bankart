@@ -53,7 +53,7 @@ class Bankart extends StatefulWidget {
           cardHolderText: cardHolderText ?? 'Card Holder',
           cardNumberText: cardNumberText ?? 'Card Number',
           expiryDateText: expiryDateText ?? 'MM/YY',
-          errorMessages: errorMessages ?? {'empty': 'All fields are required', 'expiry': 'Invalid expiry date', 'cardHolder': 'Card Holder is required', 'tokenization': 'Tokenization failed'},
+          errorMessages: errorMessages ?? {'empty': 'All fields are required', 'expired': 'Invalid expiry date', 'cardHolder': 'Card Holder is required', 'tokenization': 'Tokenization failed'},
           cardHolder: cardHolder,
           onSuccess: onSuccess,
           onError: onError);
@@ -420,7 +420,7 @@ class _BankartState extends State<Bankart> {
                       int.parse(expiryDate.split('/')[0]) <
                           DateTime.now().month)) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(widget.errorMessages['expiry']!),
+                  content: Text(widget.errorMessages['expired']!),
                   backgroundColor: Colors.red,
                 ));
                 return;
