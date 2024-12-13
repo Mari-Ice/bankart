@@ -18,6 +18,7 @@ class BankartStyle {
   final double cvvWidth;
   final double paymentButtonWidth;
   final double paymentButtonRadius;
+  final Color? outlineColor;
 
   BankartStyle.init({
     required this.name,
@@ -36,6 +37,7 @@ class BankartStyle {
     this.cvvWidth = 100,
     this.paymentButtonWidth = 100,
     this.paymentButtonRadius = 10,
+    this.outlineColor,
   });
 
   factory BankartStyle(
@@ -54,7 +56,9 @@ class BankartStyle {
         double? dateWidth,
         double? cvvWidth,
         double? paymentButtonWidth,
-        double? paymentButtonRadius}) =>
+        double? paymentButtonRadius,
+        Color? outlineColor,
+      }) =>
       BankartStyle.init(
         name: name ?? 'classic',
         borderStyle: borderStyle ??
@@ -79,6 +83,7 @@ class BankartStyle {
         cvvWidth: cvvWidth ?? 50,
         paymentButtonWidth: paymentButtonWidth ?? 100,
         paymentButtonRadius: paymentButtonRadius ?? 10,
+        outlineColor: outlineColor,
       );
 
   @override
@@ -90,6 +95,6 @@ class BankartStyle {
     return OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadius),
         borderSide: BorderSide(
-            color: themeData.colorScheme.primary, style: borderStyle));
+            color: outlineColor ?? themeData.colorScheme.primary, style: borderStyle));
   }
 }
