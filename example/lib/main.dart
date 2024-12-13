@@ -1,3 +1,4 @@
+import 'package:bankart/bankart_style.dart';
 import 'package:flutter/material.dart';
 import 'package:bankart/bankart.dart';
 
@@ -46,6 +47,9 @@ class _MyAppState extends State<MyApp> {
             Bankart('your-shared-secret',
             onSuccess: (token) => print('Tokenization successful! Token: $token)'),
             onError: (error) => print('Tokenization error! Error: $error'),
+              style: BankartStyle(
+                buttonColor: Colors.blue,
+              ),
             ),
             ],
           ),

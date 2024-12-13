@@ -105,6 +105,10 @@ class _BankartState extends State<Bankart> {
             child: TextFormField(
               decoration: InputDecoration(
                   labelText: widget.cardHolderText,
+                  focusedBorder: widget.style.inputBorder(),
+                  floatingLabelStyle: TextStyle(
+                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                  ),
                   border: widget.style.inputBorder(),
                   contentPadding: EdgeInsets.all(widget.style.padding)),
               onChanged: (value) {
@@ -317,6 +321,10 @@ class _BankartState extends State<Bankart> {
     return TextFormField(
       decoration: InputDecoration(
         labelText: widget.cardNumberText,
+        focusedBorder: widget.style.inputBorder(),
+        floatingLabelStyle: TextStyle(
+          color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+        ),
         border: widget.style.inputBorder(),
         icon: (widget.style.name == 'inline')
             ? SvgPicture.asset(
@@ -350,6 +358,10 @@ class _BankartState extends State<Bankart> {
     return TextFormField(
       decoration: InputDecoration(
           labelText: widget.expiryDateText,
+          focusedBorder: widget.style.inputBorder(),
+          floatingLabelStyle: TextStyle(
+            color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+          ),
           border: widget.style.inputBorder(),
           contentPadding: EdgeInsets.all(widget.style.padding)),
       keyboardType: TextInputType.number,
@@ -374,6 +386,10 @@ class _BankartState extends State<Bankart> {
     return TextFormField(
       decoration: InputDecoration(
           labelText: 'CVV',
+          focusedBorder: widget.style.inputBorder(),
+          floatingLabelStyle: TextStyle(
+            color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+          ),
           border: widget.style.inputBorder(),
           contentPadding: EdgeInsets.all(widget.style.padding)),
       keyboardType: TextInputType.number,

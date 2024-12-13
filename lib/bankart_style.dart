@@ -95,6 +95,8 @@ class BankartStyle {
     return OutlineInputBorder(
         borderRadius: BorderRadius.circular(borderRadius),
         borderSide: BorderSide(
-            color: outlineColor ?? themeData.colorScheme.primary, style: borderStyle));
+            color: outlineColor ?? themeData.colorScheme.primary, style: borderStyle,
+            width: 2),
+    );
   }
 }
