@@ -490,9 +490,6 @@ class _BankartState extends State<Bankart> {
             : null,
         contentPadding: EdgeInsets.all(widget.style.padding),
       ),
-      onTapOutside: (e) {
-        FocusScope.of(context).requestFocus(FocusNode());
-      },
       keyboardType: TextInputType.number,
       inputFormatters: [
         FilteringTextInputFormatter(RegExp(r'[0-9]*'), allow: true),
@@ -521,9 +518,6 @@ class _BankartState extends State<Bankart> {
           contentPadding: EdgeInsets.all(widget.style.padding)),
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter(RegExp(r'[0-9]*'), allow: true), ExpiryDateInputFormatter(), LengthLimitingTextInputFormatter(5)],
-      onTapOutside: (e) {
-        FocusScope.of(context).requestFocus(FocusNode());
-      },
       onChanged: (value) {
         setState(() {
           expiryDate = value;
@@ -545,9 +539,6 @@ class _BankartState extends State<Bankart> {
           contentPadding: EdgeInsets.all(widget.style.padding)),
       keyboardType: TextInputType.number,
       inputFormatters: [LengthLimitingTextInputFormatter(3)],
-      onTapOutside: (e) {
-        FocusScope.of(context).requestFocus(FocusNode());
-      },
       onChanged: (value) {
         setState(() {
           cvv = value;
