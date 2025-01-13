@@ -119,6 +119,7 @@ class _BankartState extends State<Bankart> {
   String? addressCity;
   String? addressPostCode;
   String? addressCountry;
+  bool _pressed = false;
 
   @override
   void initState() {
@@ -561,6 +562,7 @@ class _BankartState extends State<Bankart> {
         height: 50,
         child: ElevatedButton(
             onPressed: () async {
+              if (_pressed) return;
               if (widget.cardHolder == null && cardHolder.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(widget.errorMessages['cardHolder']!),
@@ -598,6 +600,9 @@ class _BankartState extends State<Bankart> {
                 ));
                 return;
               }
+              setState(() {
+                _pressed = true;
+              });
               String? result = await widget.client.tokenize(CardData(
                 cardHolder: widget.cardHolder ?? cardHolder,
                 pan: cardNumber,
@@ -613,6 +618,7 @@ class _BankartState extends State<Bankart> {
               }
               setState(() {
                 token = result;
+                _pressed = false;
               });
               if (widget.onSuccess != null) {
                 widget.onSuccess!(token, cardHolder, addressStreet, addressCity, addressPostCode, addressCountry);
@@ -625,7 +631,7 @@ class _BankartState extends State<Bankart> {
               elevation: widget.style.buttonElevation,
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(widget.style.paymentButtonRadius)),
-              backgroundColor: widget.style.buttonColor,
+              backgroundColor: !_pressed ? widget.style.buttonColor : widget.style.buttonColor?.withOpacity(0.5),
             ),
             child: Text(
               widget.paymentButtonText,
