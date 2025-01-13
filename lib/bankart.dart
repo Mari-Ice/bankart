@@ -23,6 +23,7 @@ class Bankart extends StatefulWidget {
   final bool requireAddress;
   final bool requireCountryCode;
   final Map<String, String>? addressData;
+  final bool editCardHolder;
 
   Bankart.init({
     super.key,
@@ -41,6 +42,7 @@ class Bankart extends StatefulWidget {
     this.addressText,
     this.requireCountryCode = false,
     this.addressData,
+    this.editCardHolder = false,
   });
 
   factory Bankart(
@@ -58,6 +60,7 @@ class Bankart extends StatefulWidget {
     List<String>? addressText,
     requireCountryCode = false,
     Map<String, String>? addressData,
+        bool editCardHolder = false,
   }) =>
       Bankart.init(
         sharedSecret: sharedSecret,
@@ -81,6 +84,7 @@ class Bankart extends StatefulWidget {
         addressText: addressText,
         requireCountryCode: requireCountryCode,
         addressData: addressData,
+        editCardHolder: editCardHolder,
       );
 
   String getPlatformVersion() {
@@ -120,10 +124,10 @@ class _BankartState extends State<Bankart> {
   void initState() {
     super.initState();
     cardHolder = widget.cardHolder ?? '';
-    addressStreet = widget.addressData?['street'];
-    addressCity = widget.addressData?['city'];
-    addressPostCode = widget.addressData?['postalCode'];
-    addressCountry = widget.addressData?['country'];
+    addressStreet = widget.addressData?['street'] ?? '';
+    addressCity = widget.addressData?['city'] ?? '';
+    addressPostCode = widget.addressData?['postalCode'] ?? '';
+    addressCountry = widget.addressData?['country'] ?? '';
   }
 
   @override
@@ -137,7 +141,7 @@ class _BankartState extends State<Bankart> {
 
   List<Widget> bankartContent(BuildContext context) {
     List<Widget> widgets = [];
-    if (widget.cardHolder == null) {
+    if (widget.cardHolder == null || widget.editCardHolder) {
       widgets.add(Container(
           padding: EdgeInsets.all(widget.style.padding),
           child: Material(
@@ -146,6 +150,7 @@ class _BankartState extends State<Bankart> {
               borderRadius: BorderRadius.circular(widget.style.borderRadius),
             ),
             child: TextFormField(
+              initialValue: cardHolder,
               decoration: InputDecoration(
                   labelText: widget.cardHolderText,
                   focusedBorder: widget.style.inputBorder(),
@@ -174,6 +179,7 @@ class _BankartState extends State<Bankart> {
               borderRadius: BorderRadius.circular(widget.style.borderRadius),
             ),
             child: TextFormField(
+              initialValue: addressStreet,
               decoration: InputDecoration(
                   labelText: widget.addressText?[0] ?? 'Street address',
                   focusedBorder: widget.style.inputBorder(),
@@ -200,6 +206,7 @@ class _BankartState extends State<Bankart> {
               borderRadius: BorderRadius.circular(widget.style.borderRadius),
             ),
             child: TextFormField(
+              initialValue: addressCity,
               decoration: InputDecoration(
                   labelText: widget.addressText?[1] ?? 'City',
                   focusedBorder: widget.style.inputBorder(),
@@ -226,6 +233,7 @@ class _BankartState extends State<Bankart> {
               borderRadius: BorderRadius.circular(widget.style.borderRadius),
             ),
             child: TextFormField(
+              initialValue: addressPostCode,
               decoration: InputDecoration(
                   labelText: widget.addressText?[2] ?? 'Postal code',
                   focusedBorder: widget.style.inputBorder(),
@@ -253,6 +261,7 @@ class _BankartState extends State<Bankart> {
                 borderRadius: BorderRadius.circular(widget.style.borderRadius),
               ),
               child: TextFormField(
+                initialValue: addressCountry,
                 decoration: InputDecoration(
                     labelText: widget.addressText?[3] ?? 'Address country code',
                     focusedBorder: widget.style.inputBorder(),
