@@ -21,6 +21,7 @@ class Bankart extends StatefulWidget {
   Function(dynamic, String, String?, String?, String?, String?)? onSuccess;
   Function(dynamic)? onError;
   final bool requireAddress;
+  final bool requireCountryCode;
 
   Bankart.init({
     super.key,
@@ -37,6 +38,7 @@ class Bankart extends StatefulWidget {
     this.onError,
     this.requireAddress = false,
     this.addressText,
+    this.requireCountryCode = false,
   });
 
   factory Bankart(
@@ -52,6 +54,7 @@ class Bankart extends StatefulWidget {
     Function(dynamic)? onError,
     bool requireAddress = false,
     List<String>? addressText,
+        requireCountryCode = false,
   }) =>
       Bankart.init(
         sharedSecret: sharedSecret,
@@ -73,6 +76,7 @@ class Bankart extends StatefulWidget {
         onError: onError,
         requireAddress: requireAddress,
         addressText: addressText,
+        requireCountryCode: requireCountryCode,
       );
 
   String getPlatformVersion() {
@@ -200,32 +204,34 @@ class _BankartState extends State<Bankart> {
       widgets.add(
         SizedBox(height: widget.style.heightSpace),
       );
-      widgets.add(Container(
-          padding: EdgeInsets.all(widget.style.padding),
-          child: Material(
-            elevation: widget.style.buttonElevation,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(widget.style.borderRadius),
-            ),
-            child: TextFormField(
-              decoration: InputDecoration(
-                  labelText: widget.addressText?[2] ?? 'Postal code',
-                  focusedBorder: widget.style.inputBorder(),
-                  floatingLabelStyle: TextStyle(
-                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
-                  ),
-                  border: widget.style.inputBorder(),
-                  contentPadding: EdgeInsets.all(widget.style.padding)),
-              onChanged: (value) {
-                setState(() {
-                  addressPostCode = value;
-                });
-              },
-            ),
-          )));
-      widgets.add(
-        SizedBox(height: widget.style.heightSpace),
-      );
+      if (widget.requireCountryCode) {
+        widgets.add(Container(
+            padding: EdgeInsets.all(widget.style.padding),
+            child: Material(
+              elevation: widget.style.buttonElevation,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(widget.style.borderRadius),
+              ),
+              child: TextFormField(
+                decoration: InputDecoration(
+                    labelText: widget.addressText?[2] ?? 'Postal code',
+                    focusedBorder: widget.style.inputBorder(),
+                    floatingLabelStyle: TextStyle(
+                      color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                    ),
+                    border: widget.style.inputBorder(),
+                    contentPadding: EdgeInsets.all(widget.style.padding)),
+                onChanged: (value) {
+                  setState(() {
+                    addressPostCode = value;
+                  });
+                },
+              ),
+            )));
+        widgets.add(
+          SizedBox(height: widget.style.heightSpace),
+        );
+      }
       widgets.add(Container(
           padding: EdgeInsets.all(widget.style.padding),
           child: Material(
@@ -539,7 +545,7 @@ class _BankartState extends State<Bankart> {
                 ));
                 return;
               }
-              if (widget.requireAddress && (addressStreet == null || addressCity == null || addressPostCode == null || addressCountry == null)) {
+              if (widget.requireAddress && (addressStreet == null || addressCity == null || addressPostCode == null || (addressCountry == null && widget.requireCountryCode))) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(widget.errorMessages['addressEmpty']!),
                   backgroundColor: Colors.red,
