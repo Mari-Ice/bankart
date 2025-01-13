@@ -17,7 +17,7 @@ class Bankart extends StatefulWidget {
   final String expiryDateText;
   final Map<String, String> errorMessages;
   String? cardHolder;
-  Function(dynamic)? onSuccess;
+  Function(dynamic, String)? onSuccess;
   Function(dynamic)? onError;
 
   Bankart.init({
@@ -43,7 +43,7 @@ class Bankart extends StatefulWidget {
           String? cardNumberText,
           String? expiryDateText,
           Map<String, String>? errorMessages,
-          Function(dynamic)? onSuccess,
+          Function(dynamic, String)? onSuccess,
           Function(dynamic)? onError}) =>
       Bankart.init(
           sharedSecret: sharedSecret,
@@ -69,6 +69,10 @@ class Bankart extends StatefulWidget {
 
   void setCardHolder(String cardHolder) {
     this.cardHolder = cardHolder;
+  }
+
+  String? getCardHolder() {
+    return cardHolder;
   }
 
   @override
@@ -458,7 +462,7 @@ class _BankartState extends State<Bankart> {
                 token = result;
               });
               if (widget.onSuccess != null) {
-                widget.onSuccess!(token);
+                widget.onSuccess!(token, cardHolder);
               }
               if (kDebugMode) {
                 print('Token: $token');
