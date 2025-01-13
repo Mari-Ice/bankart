@@ -33,5 +33,5 @@ factory Bankart(String sharedSecret,
 - the widget has a `onSuccess` and `onError` callback that you can use to handle result of tokenization. The `onSuccess` callback returns the token (string), the `onError` callback returns the error message.
 - the widget has a `paymentButtonText` parameter that you can use to change the text of the payment button.
 - you can pass your own text for the CardHolder field, CardNumber field and ExpiryDate field, by setting the `cardHolderText`, `cardNumberText` and `expiryDateText` parameters in the initialization of the object.
-- you can pass your own error messages via `errorMessages` parameter as a Map<string> with the following keys: `empty`, `expired`, `tokenization`, `cardHolder`.
+- you can pass your own error messages via `errorMessages` parameter as a Map<string> with the following keys: `empty`, `expired`, `tokenization`, `cardHolder`, `addressEmpty`.
 - you can control style of the widget via `BankartStyle` object. 

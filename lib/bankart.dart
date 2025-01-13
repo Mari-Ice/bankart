@@ -15,10 +15,12 @@ class Bankart extends StatefulWidget {
   final String cardHolderText;
   final String cardNumberText;
   final String expiryDateText;
+  final List<String>? addressText;
   final Map<String, String> errorMessages;
   String? cardHolder;
-  Function(dynamic, String)? onSuccess;
+  Function(dynamic, String, String?, String?, String?, String?)? onSuccess;
   Function(dynamic)? onError;
+  final bool requireAddress;
 
   Bankart.init({
     super.key,
@@ -33,6 +35,8 @@ class Bankart extends StatefulWidget {
     this.cardHolder,
     this.onSuccess,
     this.onError,
+    this.requireAddress = false,
+    this.addressText,
   });
 
   factory Bankart(String sharedSecret,
@@ -43,8 +47,11 @@ class Bankart extends StatefulWidget {
           String? cardNumberText,
           String? expiryDateText,
           Map<String, String>? errorMessages,
-          Function(dynamic, String)? onSuccess,
-          Function(dynamic)? onError}) =>
+          Function(dynamic, String, String?, String?, String?, String?)? onSuccess,
+          Function(dynamic)? onError,
+          bool requireAddress = false,
+            List<String>? addressText,
+          }) =>
       Bankart.init(
           sharedSecret: sharedSecret,
           style: style ?? BankartStyle(),
@@ -56,7 +63,9 @@ class Bankart extends StatefulWidget {
           errorMessages: errorMessages ?? {'empty': 'All fields are required', 'expired': 'Invalid expiry date', 'cardHolder': 'Card Holder is required', 'tokenization': 'Tokenization failed'},
           cardHolder: cardHolder,
           onSuccess: onSuccess,
-          onError: onError);
+          onError: onError,
+          requireAddress: requireAddress,
+      );
 
   String getPlatformVersion() {
     if (Platform.isAndroid) {
@@ -86,6 +95,10 @@ class _BankartState extends State<Bankart> {
   String cardHolder = '';
   String cardPath = 'packages/bankart/assets/generic-svgrepo-com.svg';
   String? token;
+  String? addressStreet;
+  String? addressCity;
+  String? addressPostCode;
+  String? addressCountry;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +131,112 @@ class _BankartState extends State<Bankart> {
               onChanged: (value) {
                 setState(() {
                   cardHolder = value;
+                });
+              },
+            ),
+          )));
+      widgets.add(
+        SizedBox(height: widget.style.heightSpace),
+      );
+    }
+    if(widget.requireAddress){
+      widgets.add(Container(
+          padding: EdgeInsets.all(widget.style.padding),
+          child: Material(
+            elevation: widget.style.buttonElevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.style.borderRadius),
+            ),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  labelText: widget.addressText?[0] ?? 'Street address',
+                  focusedBorder: widget.style.inputBorder(),
+                  floatingLabelStyle: TextStyle(
+                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                  ),
+                  border: widget.style.inputBorder(),
+                  contentPadding: EdgeInsets.all(widget.style.padding)),
+              onChanged: (value) {
+                setState(() {
+                  addressStreet = value;
+                });
+              },
+            ),
+          )));
+      widgets.add(
+        SizedBox(height: widget.style.heightSpace),
+      );
+      widgets.add(Container(
+          padding: EdgeInsets.all(widget.style.padding),
+          child: Material(
+            elevation: widget.style.buttonElevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.style.borderRadius),
+            ),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  labelText: widget.addressText?[1] ?? 'City',
+                  focusedBorder: widget.style.inputBorder(),
+                  floatingLabelStyle: TextStyle(
+                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                  ),
+                  border: widget.style.inputBorder(),
+                  contentPadding: EdgeInsets.all(widget.style.padding)),
+              onChanged: (value) {
+                setState(() {
+                  addressCity = value;
+                });
+              },
+            ),
+          )));
+      widgets.add(
+        SizedBox(height: widget.style.heightSpace),
+      );
+      widgets.add(Container(
+          padding: EdgeInsets.all(widget.style.padding),
+          child: Material(
+            elevation: widget.style.buttonElevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.style.borderRadius),
+            ),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  labelText: widget.addressText?[2] ?? 'Postal code',
+                  focusedBorder: widget.style.inputBorder(),
+                  floatingLabelStyle: TextStyle(
+                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                  ),
+                  border: widget.style.inputBorder(),
+                  contentPadding: EdgeInsets.all(widget.style.padding)),
+              onChanged: (value) {
+                setState(() {
+                  addressPostCode = value;
+                });
+              },
+            ),
+          )));
+      widgets.add(
+        SizedBox(height: widget.style.heightSpace),
+      );
+      widgets.add(Container(
+          padding: EdgeInsets.all(widget.style.padding),
+          child: Material(
+            elevation: widget.style.buttonElevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.style.borderRadius),
+            ),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  labelText: widget.addressText?[3] ?? 'Address country code',
+                  focusedBorder: widget.style.inputBorder(),
+                  floatingLabelStyle: TextStyle(
+                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                  ),
+                  border: widget.style.inputBorder(),
+                  contentPadding: EdgeInsets.all(widget.style.padding)),
+              onChanged: (value) {
+                setState(() {
+                  addressCountry = value;
                 });
               },
             ),
@@ -422,6 +541,13 @@ class _BankartState extends State<Bankart> {
                 ));
                 return;
               }
+              if (widget.requireAddress && (addressStreet == null || addressCity == null || addressPostCode == null || addressCountry == null)) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(widget.errorMessages['addressEmpty']!),
+                  backgroundColor: Colors.red,
+                ));
+                return;
+              }
               if (cardNumber.isEmpty || expiryDate.isEmpty || cvv.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(widget.errorMessages['empty']!),
@@ -462,7 +588,7 @@ class _BankartState extends State<Bankart> {
                 token = result;
               });
               if (widget.onSuccess != null) {
-                widget.onSuccess!(token, cardHolder);
+                widget.onSuccess!(token, cardHolder, addressStreet, addressCity, addressPostCode, addressCountry);
               }
               if (kDebugMode) {
                 print('Token: $token');
