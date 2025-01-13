@@ -39,32 +39,40 @@ class Bankart extends StatefulWidget {
     this.addressText,
   });
 
-  factory Bankart(String sharedSecret,
-          {BankartStyle? style,
-          String? paymentButtonText,
-          String? cardHolder,
-          String? cardHolderText,
-          String? cardNumberText,
-          String? expiryDateText,
-          Map<String, String>? errorMessages,
-          Function(dynamic, String, String?, String?, String?, String?)? onSuccess,
-          Function(dynamic)? onError,
-          bool requireAddress = false,
-            List<String>? addressText,
-          }) =>
+  factory Bankart(
+    String sharedSecret, {
+    BankartStyle? style,
+    String? paymentButtonText,
+    String? cardHolder,
+    String? cardHolderText,
+    String? cardNumberText,
+    String? expiryDateText,
+    Map<String, String>? errorMessages,
+    Function(dynamic, String, String?, String?, String?, String?)? onSuccess,
+    Function(dynamic)? onError,
+    bool requireAddress = false,
+    List<String>? addressText,
+  }) =>
       Bankart.init(
-          sharedSecret: sharedSecret,
-          style: style ?? BankartStyle(),
-          paymentButtonText: paymentButtonText ?? 'Pay',
-          client: TokenizationApi(integrationKey: sharedSecret),
-          cardHolderText: cardHolderText ?? 'Card Holder',
-          cardNumberText: cardNumberText ?? 'Card Number',
-          expiryDateText: expiryDateText ?? 'MM/YY',
-          errorMessages: errorMessages ?? {'empty': 'All fields are required', 'expired': 'Invalid expiry date', 'cardHolder': 'Card Holder is required', 'tokenization': 'Tokenization failed'},
-          cardHolder: cardHolder,
-          onSuccess: onSuccess,
-          onError: onError,
-          requireAddress: requireAddress,
+        sharedSecret: sharedSecret,
+        style: style ?? BankartStyle(),
+        paymentButtonText: paymentButtonText ?? 'Pay',
+        client: TokenizationApi(integrationKey: sharedSecret),
+        cardHolderText: cardHolderText ?? 'Card Holder',
+        cardNumberText: cardNumberText ?? 'Card Number',
+        expiryDateText: expiryDateText ?? 'MM/YY',
+        errorMessages: errorMessages ??
+            {
+              'empty': 'All fields are required',
+              'expired': 'Invalid expiry date',
+              'cardHolder': 'Card Holder is required',
+              'tokenization': 'Tokenization failed'
+            },
+        cardHolder: cardHolder,
+        onSuccess: onSuccess,
+        onError: onError,
+        requireAddress: requireAddress,
+        addressText: addressText,
       );
 
   String getPlatformVersion() {
@@ -139,7 +147,7 @@ class _BankartState extends State<Bankart> {
         SizedBox(height: widget.style.heightSpace),
       );
     }
-    if(widget.requireAddress){
+    if (widget.requireAddress) {
       widgets.add(Container(
           padding: EdgeInsets.all(widget.style.padding),
           child: Material(
@@ -274,8 +282,7 @@ class _BankartState extends State<Bankart> {
               Material(
                 elevation: widget.style.buttonElevation,
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(widget.style.borderRadius),
+                  borderRadius: BorderRadius.circular(widget.style.borderRadius),
                 ),
                 child: _buildCardNumberField(context),
               ),
@@ -300,8 +307,7 @@ class _BankartState extends State<Bankart> {
                 child: Material(
                   elevation: widget.style.buttonElevation,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(widget.style.borderRadius),
+                    borderRadius: BorderRadius.circular(widget.style.borderRadius),
                   ),
                   child: _buildExpiryDateField(context),
                 ),
@@ -313,8 +319,7 @@ class _BankartState extends State<Bankart> {
                 child: Material(
                   elevation: widget.style.buttonElevation,
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(widget.style.borderRadius),
+                    borderRadius: BorderRadius.circular(widget.style.borderRadius),
                   ),
                   child: _buildCvvField(context),
                 ),
@@ -370,10 +375,7 @@ class _BankartState extends State<Bankart> {
                 children: [
                   TableCell(
                     child: Table(
-                      border: TableBorder(
-                          verticalInside: BorderSide(
-                              color:
-                                  widget.style.themeData.colorScheme.primary)),
+                      border: TableBorder(verticalInside: BorderSide(color: widget.style.themeData.colorScheme.primary)),
                       children: [
                         TableRow(
                           children: [
@@ -488,11 +490,7 @@ class _BankartState extends State<Bankart> {
           border: widget.style.inputBorder(),
           contentPadding: EdgeInsets.all(widget.style.padding)),
       keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter(RegExp(r'[0-9]*'), allow: true),
-        ExpiryDateInputFormatter(),
-        LengthLimitingTextInputFormatter(5)
-      ],
+      inputFormatters: [FilteringTextInputFormatter(RegExp(r'[0-9]*'), allow: true), ExpiryDateInputFormatter(), LengthLimitingTextInputFormatter(5)],
       onTapOutside: (e) {
         FocusScope.of(context).requestFocus(FocusNode());
       },
@@ -559,12 +557,8 @@ class _BankartState extends State<Bankart> {
               if (expiryDate.contains('/') == false ||
                   int.parse(expiryDate.split('/')[0]) > 12 ||
                   int.parse(expiryDate.split('/')[0]) < 1 ||
-                  int.parse(expiryDate.split('/')[1]) + 2000 <
-                      DateTime.now().year ||
-                  (int.parse(expiryDate.split('/')[1]) + 2000 ==
-                          DateTime.now().year &&
-                      int.parse(expiryDate.split('/')[0]) <
-                          DateTime.now().month)) {
+                  int.parse(expiryDate.split('/')[1]) + 2000 < DateTime.now().year ||
+                  (int.parse(expiryDate.split('/')[1]) + 2000 == DateTime.now().year && int.parse(expiryDate.split('/')[0]) < DateTime.now().month)) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(widget.errorMessages['expired']!),
                   backgroundColor: Colors.red,
@@ -597,9 +591,7 @@ class _BankartState extends State<Bankart> {
             style: ElevatedButton.styleFrom(
               elevation: widget.style.buttonElevation,
               minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(widget.style.paymentButtonRadius)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(widget.style.paymentButtonRadius)),
               backgroundColor: widget.style.buttonColor,
             ),
             child: Text(
@@ -615,8 +607,7 @@ class _BankartState extends State<Bankart> {
       assetPath = 'packages/bankart/assets/visa.svg';
     } else if (RegExp(r'^5[1-5]').hasMatch(cardNumber)) {
       // MasterCard starts with '51' to '55'
-      assetPath =
-          'packages/bankart/assets/Mastercard Symbol - SVG/Artwork/mc_symbol.svg';
+      assetPath = 'packages/bankart/assets/Mastercard Symbol - SVG/Artwork/mc_symbol.svg';
     } else if (RegExp(r'^3[47]').hasMatch(cardNumber)) {
       // American Express starts with '34' or '37'
       assetPath = 'packages/bankart/assets/american-express-svgrepo-com.svg';
