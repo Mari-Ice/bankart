@@ -57,6 +57,7 @@ class Bankart extends StatefulWidget {
     bool requireAddress = false,
     List<String>? addressText,
     requireCountryCode = false,
+    Map<String, String>? addressData,
   }) =>
       Bankart.init(
         sharedSecret: sharedSecret,
@@ -79,6 +80,7 @@ class Bankart extends StatefulWidget {
         requireAddress: requireAddress,
         addressText: addressText,
         requireCountryCode: requireCountryCode,
+        addressData: addressData,
       );
 
   String getPlatformVersion() {
@@ -123,6 +125,7 @@ class _BankartState extends State<Bankart> {
     addressPostCode = widget.addressData?['postalCode'];
     addressCountry = widget.addressData?['country'];
   }
+
   @override
   Widget build(BuildContext context) {
     return Container(
