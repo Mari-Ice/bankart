@@ -22,6 +22,7 @@ class Bankart extends StatefulWidget {
   Function(dynamic)? onError;
   final bool requireAddress;
   final bool requireCountryCode;
+  final Map<String, String>? addressData;
 
   Bankart.init({
     super.key,
@@ -39,6 +40,7 @@ class Bankart extends StatefulWidget {
     this.requireAddress = false,
     this.addressText,
     this.requireCountryCode = false,
+    this.addressData,
   });
 
   factory Bankart(
@@ -112,6 +114,15 @@ class _BankartState extends State<Bankart> {
   String? addressPostCode;
   String? addressCountry;
 
+  @override
+  void initState() {
+    super.initState();
+    cardHolder = widget.cardHolder ?? '';
+    addressStreet = widget.addressData?['street'];
+    addressCity = widget.addressData?['city'];
+    addressPostCode = widget.addressData?['postalCode'];
+    addressCountry = widget.addressData?['country'];
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
