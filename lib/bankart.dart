@@ -54,7 +54,7 @@ class Bankart extends StatefulWidget {
     Function(dynamic)? onError,
     bool requireAddress = false,
     List<String>? addressText,
-        requireCountryCode = false,
+    requireCountryCode = false,
   }) =>
       Bankart.init(
         sharedSecret: sharedSecret,
@@ -204,6 +204,32 @@ class _BankartState extends State<Bankart> {
       widgets.add(
         SizedBox(height: widget.style.heightSpace),
       );
+      widgets.add(Container(
+          padding: EdgeInsets.all(widget.style.padding),
+          child: Material(
+            elevation: widget.style.buttonElevation,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(widget.style.borderRadius),
+            ),
+            child: TextFormField(
+              decoration: InputDecoration(
+                  labelText: widget.addressText?[2] ?? 'Postal code',
+                  focusedBorder: widget.style.inputBorder(),
+                  floatingLabelStyle: TextStyle(
+                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
+                  ),
+                  border: widget.style.inputBorder(),
+                  contentPadding: EdgeInsets.all(widget.style.padding)),
+              onChanged: (value) {
+                setState(() {
+                  addressPostCode = value;
+                });
+              },
+            ),
+          )));
+      widgets.add(
+        SizedBox(height: widget.style.heightSpace),
+      );
       if (widget.requireCountryCode) {
         widgets.add(Container(
             padding: EdgeInsets.all(widget.style.padding),
@@ -214,7 +240,7 @@ class _BankartState extends State<Bankart> {
               ),
               child: TextFormField(
                 decoration: InputDecoration(
-                    labelText: widget.addressText?[2] ?? 'Postal code',
+                    labelText: widget.addressText?[3] ?? 'Address country code',
                     focusedBorder: widget.style.inputBorder(),
                     floatingLabelStyle: TextStyle(
                       color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
@@ -223,7 +249,7 @@ class _BankartState extends State<Bankart> {
                     contentPadding: EdgeInsets.all(widget.style.padding)),
                 onChanged: (value) {
                   setState(() {
-                    addressPostCode = value;
+                    addressCountry = value;
                   });
                 },
               ),
@@ -232,32 +258,6 @@ class _BankartState extends State<Bankart> {
           SizedBox(height: widget.style.heightSpace),
         );
       }
-      widgets.add(Container(
-          padding: EdgeInsets.all(widget.style.padding),
-          child: Material(
-            elevation: widget.style.buttonElevation,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(widget.style.borderRadius),
-            ),
-            child: TextFormField(
-              decoration: InputDecoration(
-                  labelText: widget.addressText?[3] ?? 'Address country code',
-                  focusedBorder: widget.style.inputBorder(),
-                  floatingLabelStyle: TextStyle(
-                    color: widget.style.outlineColor ?? widget.style.themeData.colorScheme.primary,
-                  ),
-                  border: widget.style.inputBorder(),
-                  contentPadding: EdgeInsets.all(widget.style.padding)),
-              onChanged: (value) {
-                setState(() {
-                  addressCountry = value;
-                });
-              },
-            ),
-          )));
-      widgets.add(
-        SizedBox(height: widget.style.heightSpace),
-      );
     }
     widgets.add(_bankart(context));
     return widgets;
@@ -545,7 +545,11 @@ class _BankartState extends State<Bankart> {
                 ));
                 return;
               }
-              if (widget.requireAddress && (addressStreet == null || addressCity == null || addressPostCode == null || (addressCountry == null && widget.requireCountryCode))) {
+              if (widget.requireAddress &&
+                  (addressStreet == null ||
+                      addressCity == null ||
+                      addressPostCode == null ||
+                      (addressCountry == null && widget.requireCountryCode))) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text(widget.errorMessages['addressEmpty']!),
                   backgroundColor: Colors.red,
